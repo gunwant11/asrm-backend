@@ -10,6 +10,7 @@ python-speech-features = "*"
 scikit-learn = "*"
 scipy = "*"
 python-multipart = "*"
+uvicorn = {extras = ["standard"], version = "*"}
 
 [dev-packages]
 
