@@ -1,0 +1,21 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+fastapi = "*"
+numpy = "*"
+python-speech-features = "*"
+scikit-learn = "*"
+scipy = "*"
+python-multipart = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"
+python_full_version = "3.9.4"
+
+[scripts]
+watch = "uvicorn src.main:app --reload --port=8000 "
