@@ -2,7 +2,6 @@ import os
 import wave
 import time
 import pickle
-import pyaudio
 import warnings
 import numpy as np
 from sklearn import preprocessing
