@@ -35,7 +35,7 @@ async def train_model():
 @app.post("/upload_test_audio_file/")
 async def upload_audio_file(file: UploadFile = File(...), folder_path: Optional[str] = "model/testing_set/"):
     contents = await file.read()
-    with open(folder_path + file.filename, "wb") as f:
+    with open(folder_path + 'sample.wav', "wb") as f:
         f.write(contents)
 
     return {"message": "File uploaded successfully"}
