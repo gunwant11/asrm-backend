@@ -1,14 +1,11 @@
 from fastapi import FastAPI, UploadFile, File
 from typing import Optional
 from pydantic import BaseModel
+import boto3 , os
+from io import BytesIO
 from model.SpeakerIdentification import test_model, train_model
+from src.s3 import uplaodtoS3
 app = FastAPI()
-
-# class AudioFileUpload(BaseModel):
-#     file: list[UploadFile]
-#     folder_path: Optional[str] = "model/testing_set/"
-
-
 
 @app.get("/")
 async def root():
@@ -31,11 +28,22 @@ async def train_model():
     train_model()
     return {"response": "Model trained"}
 
-# multiple files
-@app.post("/upload_test_audio_file/")
-async def upload_audio_file(file: UploadFile = File(...), folder_path: Optional[str] = "model/testing_set/"):
-    contents = await file.read()
-    with open(folder_path + 'sample.wav', "wb") as f:
-        f.write(contents)
 
-    return {"message": "File uploaded successfully"}
+@app.post("/upload")
+async def upload(audioFile: UploadFile = File(...), audioPathType: Optional[str]= "testing_set") :
+    try:
+        # read the file content as bytes
+        content = await audioFile.read()
+        # create a file object from the bytes content
+        file = BytesIO(content)
+        print(type(file),audioPathType )
+        # upload the file to S3
+        # url = uplaodtoS3(request.audioPathType, request.audioFile.filename, file)
+        return 'url'
+    except Exception as e:
+        print(e)
+        return "Error uploading file to S3"
+
+# path type can be testing_set or training_set or model according the folderpath will be testing_set/ or training_set/ or trained_models/ and we can upload
+
+    

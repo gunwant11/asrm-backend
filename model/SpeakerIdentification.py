@@ -6,8 +6,11 @@ from sklearn import preprocessing
 from scipy.io.wavfile import read
 import python_speech_features as mfcc
 from sklearn.mixture import GaussianMixture
+from src.s3 import download_from_s3, uplaodtoS3
 
 warnings.filterwarnings("ignore")
+
+
 
 
 def calculate_delta(array):
@@ -47,18 +50,20 @@ def extract_features(audio, rate):
     return combined
 
 def train_model():
+    train_file = []
+    file_list = download_from_s3("model/training_set/")
+    for file in file_list:
+        train_file.append(file.split("/")[-1])
 
-    train_file = "model/training_set_addition.txt"
-    source = "model/training_set/"
-    dest = "model/training_models/"
-    file_paths = open(train_file, 'r')
-    count = 1
+    models_folder = "trained_models"
     features = np.asarray(())
-    for path in file_paths:
-        path = path.strip()
+
+    count = 1
+    for path in train_file:
         print(path)
 
-        sr, audio = read(source + path)
+        file = download_from_s3("model/training_set/" + path)
+        sr, audio = read(file)
         print(sr)
         vector = extract_features(audio, sr)
 
@@ -73,35 +78,48 @@ def train_model():
             gmm.fit(features)
 
             # dumping the trained gaussian model
-            picklefile = path.split("-")[0]+".gmm"
-            pickle.dump(gmm, open(dest + picklefile, 'wb'))
+            picklefile = path.split("-")[0] + ".gmm"
+            with open(picklefile, 'wb') as f:
+                pickle.dump(gmm, f)
+            s3_key = models_folder + picklefile
+            with open(picklefile, 'rb') as f:
+                uplaodtoS3(models_folder, s3_key, f)
             print('+ modeling completed for speaker:', picklefile,
                   " with data point = ", features.shape)
             features = np.asarray(())
             count = 0
         count = count + 1
 
-
 def test_model():
-    test_file = "model/testing_set_addition.txt"
+    test_file = []
+    file_list = download_from_s3("model/testing_set/")
+    for file in file_list:
+        test_file.append(file.split("/")[-1])
+
     source = "model/testing_set/"
     modelpath = "model/trained_models/"
 
-    file_paths = open(test_file, 'r')
-
-    gmm_files = [os.path.join(modelpath, fname) for fname in os.listdir(modelpath) if fname.endswith('.gmm')]
+    gmm_files = []
+    for fname in download_from_s3(modelpath):
+        if fname.endswith('.gmm'):
+            gmm_files.append(fname.split("/")[-1])
 
     # Load the Gaussian gender Models
-    models = [pickle.load(open(fname, 'rb')) for fname in gmm_files]
-    speakers = [fname.split("\\")[-1].split(".gmm")[0] for fname
-                in gmm_files]
-    winner= ''
+    models = []
+    speakers = []
+    for fname in gmm_files:
+        file = download_from_s3(modelpath + fname)
+        models.append(pickle.load(open(file, 'rb')))
+        speakers.append(fname.split(".gmm")[0])
+
+    winner = ''
     # Read the test directory and get the list of test audio files
-    for path in file_paths:
+    for path in test_file:
 
         path = path.strip()
         print(path)
-        sr, audio = read(source + path)
+        file = download_from_s3("model/testing_set/" + path)
+        sr, audio = read(file)
         vector = extract_features(audio, sr)
 
         log_likelihood = np.zeros(len(models))
@@ -114,6 +132,7 @@ def test_model():
         winner = np.argmax(log_likelihood)
         print("\tdetected as - ", speakers[winner])
     return speakers[winner]
+
 # choice=int(input("\n1.Record audio for training \n 2.Train Model \n 3.Record audio for testing \n 4.Test Model\n"))
 
 
