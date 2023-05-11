@@ -1,12 +1,9 @@
 from fastapi import FastAPI, UploadFile, File
 from typing import Optional
+import os
 from pydantic import BaseModel
 from model.SpeakerIdentification import test_model, train_model
 app = FastAPI()
-
-# class AudioFileUpload(BaseModel):
-#     file: list[UploadFile]
-#     folder_path: Optional[str] = "model/testing_set/"
 
 
 
@@ -37,5 +34,13 @@ async def upload_audio_file(file: UploadFile = File(...), folder_path: Optional[
     contents = await file.read()
     with open(folder_path + 'sample.wav', "wb") as f:
         f.write(contents)
+    
+    if folder_path == "model/training_set/":
+        with open(folder_path + file.filename, "wb") as f:
+            f.write(contents)
+        
+        with open("model/training_set_addition.txt", "a") as f:
+            f.write(file.filename + "\n")
+    print(os.listdir(folder_path))
 
     return {"message": "File uploaded successfully"}
