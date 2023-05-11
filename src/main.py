@@ -43,4 +43,4 @@ async def upload_audio_file(file: UploadFile = File(...), folder_path: Optional[
             f.write(file.filename + "\n")
     print(os.listdir(folder_path))
 
-    return {"message": "File uploaded successfully"}
+    return {"message": "File uploaded successfully", 'files': os.listdir(folder_path) }
