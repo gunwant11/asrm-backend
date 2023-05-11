@@ -1,8 +1,16 @@
 import boto3, os
-
+from pydantic import BaseSettings
 BUCKET_NAME = '3d-assets-portfolio'
-os.environ['AWS_ACCESS_KEY_ID'] = 'AKIAQJBBCSNVEL3KVMFG'
-os.environ['AWS_SECRET_ACCESS_KEY'] = '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'
+class Settings(BaseSettings):
+    aws_access_key_id: str
+    aws_secret_access_key: str
+
+    class Config:
+        env_file = ".env"
+
+settings = Settings()
+os.environ["AWS_ACCESS_KEY_ID"] = settings.aws_access_key_id
+os.environ["AWS_SECRET_ACCESS_KEY"] = settings.aws_secret_access_key
 
 # Create an S3 client object
 s3 = boto3.client('s3', region_name='ap-south-1')
