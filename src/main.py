@@ -28,6 +28,9 @@ async def train_model():
     train_model()
     return {"response": "Model trained"}
 
+class uploadRequest:
+    audioFile: UploadFile = File(...)
+    audioPathType: Optional[str]= "testing_set"
 
 @app.post("/upload/")
 async def upload(audioFile: UploadFile = File(...), audioPathType: Optional[str]= "testing_set") :
