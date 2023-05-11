@@ -8,8 +8,6 @@ app = FastAPI()
 #     file: list[UploadFile]
 #     folder_path: Optional[str] = "model/testing_set/"
 
-class TestSpeaker(BaseModel):
-    speaker: Optional[str]
 
 
 @app.get("/")
@@ -17,9 +15,14 @@ async def root():
     return {"message": "Hello World"}
 
 @app.get("/test")
-async def test_speaker(test_speaker: TestSpeaker):
+async def test_speaker(test_speaker: str):
     ansSpeaker = test_model()
-    return {"response": ansSpeaker}
+    correct = False
+    if ansSpeaker == test_speaker:
+        correct = True
+    return {"response": ansSpeaker, "correct": correct}
+   
+
 
 @app.get("/train")
 async def train_model():
