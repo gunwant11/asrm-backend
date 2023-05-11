@@ -17,6 +17,8 @@ async def root():
 @app.get("/test")
 async def test_speaker(test_speaker: str):
     ansSpeaker = test_model()
+
+    ansSpeaker = ansSpeaker.split("/")[-1]
     correct = False
     if ansSpeaker == test_speaker:
         correct = True
